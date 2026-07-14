@@ -46,6 +46,5 @@ class User(
         externalKey = UUID.randomUUID()
     }
 
-
 }
 
