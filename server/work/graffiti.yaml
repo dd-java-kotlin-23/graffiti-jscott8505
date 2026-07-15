@@ -1,0 +1,231 @@
+openapi: 3.1.0
+info:
+  title: Graffiti Web Service API
+  version: 0.1.0
+  description: >-
+    OpenAPI representation of the currently documented Graffiti web-service
+    functionality.
+servers:
+  - url: /
+security:
+  - bearerAuth: []
+paths:
+  /canvases:
+    post:
+      summary: Create a canvas
+      description: >-
+        Creates a canvas with the authenticated user as its owner.
+      operationId: createCanvas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CanvasInput'
+      responses:
+        '201':
+          description: Canvas created.
+          headers:
+            Location:
+              description: URL of the created canvas resource.
+              required: true
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Canvas'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+    get:
+      summary: Get a list of canvases
+      description: Retrieves canvases, optionally within a date range.
+      operationId: listCanvases
+      parameters:
+        - name: start
+          in: query
+          required: false
+          description: >-
+            Start of the date range. Defaults to 30 days before the current
+            date and time.
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          required: false
+          description: >-
+            End of the date range. Defaults to the current date and time and
+            must be after start.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Selected canvases returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CanvasSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '406':
+          $ref: '#/components/responses/NotAcceptable'
+  /canvases/{key}:
+    delete:
+      summary: Delete a canvas
+      description: Deletes the specified canvas if the authenticated user owns it.
+      operationId: deleteCanvas
+      parameters:
+        - name: key
+          in: path
+          required: true
+          description: UUID encoded using Base64 URL encoding.
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9_-]+={0,2}$'
+      responses:
+        '204':
+          description: Canvas deleted; no response body is returned.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: OIDC/OAuth 2.0 token
+  schemas:
+    CanvasInput:
+      type: object
+      additionalProperties: false
+      required:
+        - height
+        - width
+      properties:
+        height:
+          type: integer
+          minimum: 1
+          maximum: 1024
+        width:
+          type: integer
+          minimum: 1
+          maximum: 1024
+        backgroundcolor:
+          type: integer
+          format: int32
+          default: -1
+    Canvas:
+      type: object
+      additionalProperties: false
+      required:
+        - height
+        - width
+        - backgroundcolor
+        - created
+        - owner
+      properties:
+        height:
+          type: integer
+          minimum: 1
+          maximum: 1024
+        width:
+          type: integer
+          minimum: 1
+          maximum: 1024
+        backgroundcolor:
+          type: integer
+          format: int32
+        created:
+          type: string
+          format: date-time
+        owner:
+          $ref: '#/components/schemas/UserProfile'
+    CanvasSummary:
+      allOf:
+        - $ref: '#/components/schemas/Canvas'
+        - type: object
+          required:
+            - brushstrokeCount
+            - lastBrushStrokes
+          properties:
+            brushstrokeCount:
+              type: integer
+              minimum: 0
+            lastBrushStrokes:
+              type: string
+              format: date-time
+    UserProfile:
+      type: object
+      description: >-
+        User profile associated with a canvas. Its properties are not yet
+        defined in the functional specification.
+      additionalProperties: true
+    Error:
+      type: object
+      additionalProperties: false
+      required:
+        - timestamp
+        - status
+        - error
+        - path
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+  responses:
+    BadRequest:
+      description: One or more request values are invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: The bearer token is absent or cannot be verified.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: The authenticated user does not own the canvas.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: The specified canvas was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotAcceptable:
+      description: The requested response media type is not application/json.
+    UnsupportedMediaType:
+      description: The request payload media type is not application/json.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
