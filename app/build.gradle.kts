@@ -44,7 +44,7 @@ android {
             "de.mannodermaus.junit5.AndroidJUnit5Builder"
 
         resValue("string", "app_name", project.property("appName") as String)
-
+        resValue("string", "client_id", getLocalProperty("clientId"))
     }
 
     buildTypes {
@@ -148,9 +148,9 @@ dependencies {
 
     // Android/Google authentication libraries
     // implementation(libs.play.auth) // Legacy
-    // implementation(libs.credentials)
-    // implementation(libs.credentials.play.services)
-    // implementation(libs.googleid)
+     implementation(libs.credentials)
+     implementation(libs.credentials.play.services)
+     implementation(libs.googleid)
 
     // Retrofit (REST client) with Gson & RxJava integration
     // implementation(libs.retrofit.core)
