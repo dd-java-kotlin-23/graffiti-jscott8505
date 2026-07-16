@@ -27,6 +27,12 @@ internal class GoogleTokenParser @Inject constructor() : TokenParser {
         } catch (e: Exception) {
             true
         }
-
     }
+
+    override fun extractDisplayName(token: String): String {
+        val payload = token.split(".")[1]
+        val decodedPayload = String(Base64.decode(payload, Base64.URL_SAFE or Base64.NO_WRAP))
+        return JSONObject(decodedPayload).getString("name")
+    }
+
 }
