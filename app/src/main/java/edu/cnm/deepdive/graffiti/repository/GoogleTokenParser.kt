@@ -6,7 +6,7 @@ import jakarta.inject.Singleton
 import org.json.JSONObject
 
 @Singleton
-class GoogleTokenParser @Inject constructor() : TokenParser {
+internal class GoogleTokenParser @Inject constructor() : TokenParser {
 
     override fun extractSubject(token: String): String {
         val payload = token.split(".")[1]
