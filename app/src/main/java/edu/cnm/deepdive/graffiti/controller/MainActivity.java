@@ -9,13 +9,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import dagger.hilt.android.AndroidEntryPoint;
+import edu.cnm.deepdive.graffiti.NavGraphDirections;
 import edu.cnm.deepdive.graffiti.R;
 import edu.cnm.deepdive.graffiti.databinding.ActivityMainBinding;
+import edu.cnm.deepdive.graffiti.viewmodel.SignInState;
+import edu.cnm.deepdive.graffiti.viewmodel.SignInState.Status;
+import edu.cnm.deepdive.graffiti.viewmodel.UserViewModel;
 
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
@@ -23,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
   private static final String TAG = MainActivity.class.getSimpleName();
 
   private ActivityMainBinding binding;
+  private UserViewModel viewModel;
   private NavController navController;
   private AppBarConfiguration appBarConfig;
 
@@ -37,20 +43,28 @@ public class MainActivity extends AppCompatActivity {
       v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
       return insets;
     });
+    viewModel = new ViewModelProvider(this).get(UserViewModel.class);
+    viewModel
+        .getState()
+        .observe(this, (state) -> {
+          if (state.status() == SignInState.Status.SIGNED_OUT) {
+            navController.navigate(NavGraphDirections.showLoginFragment());
+          }
+        });
     setupNavigation();
   }
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
-     super.onCreateOptionsMenu(menu);
-     getMenuInflater().inflate(R.menu.main_options, menu);
-     return true;
+    super.onCreateOptionsMenu(menu);
+    getMenuInflater().inflate(R.menu.main_options, menu);
+    return true;
   }
 
   @Override
   public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     if (item.getItemId() == R.id.sign_out) {
-      // TODO: 7/20/26 Do the sign-out stuff.
+      viewModel.signOut();
       return true;
     }
     return super.onOptionsItemSelected(item);
