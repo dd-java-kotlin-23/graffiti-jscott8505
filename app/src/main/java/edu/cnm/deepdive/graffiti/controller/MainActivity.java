@@ -1,7 +1,6 @@
 package edu.cnm.deepdive.graffiti.controller;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import androidx.activity.EdgeToEdge;
@@ -11,6 +10,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import dagger.hilt.android.AndroidEntryPoint;
@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
       v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
       return insets;
     });
+    setupNavigation();
   }
 
   @Override
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
   @Override
   public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     if (item.getItemId() == R.id.sign_out) {
-      // TODO: 7/20/26 Do the sign out stuff.
+      // TODO: 7/20/26 Do the sign-out stuff.
       return true;
     }
     return super.onOptionsItemSelected(item);
@@ -58,6 +59,13 @@ public class MainActivity extends AppCompatActivity {
   @Override
   public boolean onSupportNavigateUp() {
     return NavigationUI.navigateUp(navController, appBarConfig) || super.onSupportNavigateUp();
+  }
+
+  private void setupNavigation() {
+    appBarConfig = new AppBarConfiguration.Builder(R.id.login_fragment, R.id.main_fragment).build();
+    NavHostFragment host = binding.navHostFragment.getFragment();
+    navController = host.getNavController();
+    NavigationUI.setupActionBarWithNavController(this, navController, appBarConfig);
   }
 
 }
