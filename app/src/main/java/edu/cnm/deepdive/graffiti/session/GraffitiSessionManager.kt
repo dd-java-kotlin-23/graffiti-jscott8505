@@ -3,13 +3,14 @@ package edu.cnm.deepdive.graffiti.session
 import android.app.Activity
 import edu.cnm.deepdive.graffiti.model.domain.User
 import edu.cnm.deepdive.graffiti.repository.AuthRepository
+import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-internal class GraffitiSessionManager(
+internal class GraffitiSessionManager @Inject constructor(
     private val authRepository: AuthRepository
     // TODO: Add additional dependencies for web service proxy, etc.
 ) : SessionManager {
