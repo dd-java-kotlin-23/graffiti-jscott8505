@@ -1,6 +1,7 @@
 package edu.cnm.deepdive.graffiti.session
 
 import android.app.Activity
+import edu.cnm.deepdive.graffiti.model.auth.AuthCredential
 import edu.cnm.deepdive.graffiti.model.domain.User
 import edu.cnm.deepdive.graffiti.repository.AuthRepository
 import jakarta.inject.Inject
@@ -9,6 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+
+
 
 internal class GraffitiSessionManager @Inject constructor(
     private val authRepository: AuthRepository
@@ -20,18 +23,15 @@ internal class GraffitiSessionManager @Inject constructor(
 
     override val state: StateFlow<SessionState> = mutableState.asStateFlow()
 
-    override suspend fun signIn(activity: Activity): User =
+    override suspend fun signInAutomatically(activity: Activity): User =
         mutex.withLock {
-            val credential = try {
-                authRepository.signInQuickly(activity)
-            } catch (_: AuthRepository.SignInRequiredException) {
-                authRepository.signIn(activity)
-            }
-            // TODO: Get user info from web service.
-            val user = User(credential.displayName, credential.subject)
-            mutableState.value = SessionState.SignedIn(user, credential)
-            user
+            establishSession(authRepository.signInAutomatically(activity))
         }
+
+    override suspend fun signInInteractively(activity: Activity): User =
+        mutex.withLock {
+        establishSession(authRepository.signInInteractively(activity))
+    }
 
     override fun getCurrentUser(): User? =
         (mutableState.value as? SessionState.SignedIn)?.user
@@ -48,5 +48,14 @@ internal class GraffitiSessionManager @Inject constructor(
     override suspend fun signOut() =
         mutex.withLock {
             authRepository.signOut()
+            mutableState.value = SessionState.SignedOut
         }
+
+    private fun establishSession (credential: AuthCredential): User {
+        // TODO: Get user info from web service.
+        val user = User(credential.displayName, credential.subject)
+        mutableState.value = SessionState.SignedIn(user, credential)
+        return user
+    }
+
 }
