@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModel;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 import edu.cnm.deepdive.graffiti.model.domain.User;
 import edu.cnm.deepdive.graffiti.service.UserService;
-import edu.cnm.deepdive.graffiti.viewmodel.SignInState;
 import jakarta.inject.Inject;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicBoolean;
